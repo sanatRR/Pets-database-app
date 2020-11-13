@@ -15,10 +15,12 @@
  */
 package com.example.android.pets;
 
+import android.content.Context;
 import android.os.Bundle;
 import androidx.core.app.NavUtils;
 import androidx.appcompat.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,29 +30,33 @@ import android.widget.EditText;
 import android.widget.Spinner;
 
 import com.example.android.pets.data.BlankContract.petContract;
+import com.example.android.pets.CatalogActivity;
 
 /**
  * Allows user to create a new pet or edit an existing one.
  */
 public class EditorActivity extends AppCompatActivity {
+    CatalogActivity a1;
+
 
     /** EditText field to enter the pet's name */
-    private EditText mNameEditText;
+    public  EditText mNameEditText;
 
     /** EditText field to enter the pet's breed */
-    private EditText mBreedEditText;
+    public  EditText mBreedEditText;
 
     /** EditText field to enter the pet's weight */
-    private EditText mWeightEditText;
+    public  EditText mWeightEditText;
 
     /** EditText field to enter the pet's gender */
-    private Spinner mGenderSpinner;
+    public  Spinner mGenderSpinner;
 
     /**
      * Gender of the pet. The possible values are:
      * 0 for unknown gender, 1 for male, 2 for female.
      */
-    private int mGender = 0;
+    public static int mGender = 0,tempWeight;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,7 +91,7 @@ public class EditorActivity extends AppCompatActivity {
         mGenderSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selection = (String) parent.getItemAtPosition(position);
+             /*   String selection = (String) parent.getItemAtPosition(position);
                 if (!TextUtils.isEmpty(selection)) {
                     if (selection.equals(getString(R.string.gender_male))) {
                         mGender = petContract.GENDER_MALE; // Male
@@ -94,6 +100,18 @@ public class EditorActivity extends AppCompatActivity {
                     } else {
                         mGender = petContract.GENDER_unknown; // Unknown
                     }
+                } */
+                switch (position)
+                {
+                    case 0:
+                        mGender=petContract.GENDER_unknown;
+                        break;
+                    case 1:
+                        mGender=petContract.GENDER_MALE;
+                        break;
+                    case 2:
+                        mGender=petContract.GENDER_FEMALE;
+                        break;
                 }
             }
 
@@ -120,7 +138,8 @@ public class EditorActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             // Respond to a click on the "Save" menu option
             case R.id.action_save:
-                // Do nothing for now
+                CatalogActivity a1=new CatalogActivity();
+                a1.insertPet("Sanat","Sanat",1,10);
                 return true;
             // Respond to a click on the "Delete" menu option
             case R.id.action_delete:
