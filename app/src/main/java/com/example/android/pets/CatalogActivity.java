@@ -44,7 +44,8 @@ public class CatalogActivity extends AppCompatActivity {
 
     database mDbHelper;
     static SQLiteDatabase db;
-    TextView displayView;
+    static TextView displayView;
+    Toast t1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,7 +71,7 @@ public class CatalogActivity extends AppCompatActivity {
         db = mDbHelper.getWritableDatabase();
     }
 
-    public void insertPet(String name, String breed, int gender, int weight)
+    public void insertPet(String name, String breed, int gender, int weight,Context context)
     {
         Long row_id;
         ContentValues insertVal=new ContentValues();
@@ -83,7 +84,8 @@ public class CatalogActivity extends AppCompatActivity {
         else
         {
             row_id=db.insert("pets",null,insertVal);
-            Log.d("row id ", String.valueOf(row_id));
+            t1=Toast.makeText(context,String.valueOf(row_id),Toast.LENGTH_SHORT);
+            t1.show();
         }
         displayDatabaseInfo();
     }
@@ -122,7 +124,7 @@ public class CatalogActivity extends AppCompatActivity {
         try {
             // Display the number of rows in the Cursor (which reflects the number of rows in the
             // pets table in the database).
-     //       displayView.setText("Number of rows in pets database table: " + cursor.getCount());
+        displayView.setText("Number of rows in pets database table: " + cursor.getCount());
         } finally {
             // Always close the cursor when you're done reading from it. This releases all its
             // resources and makes it invalid.

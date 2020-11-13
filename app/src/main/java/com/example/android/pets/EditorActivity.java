@@ -28,6 +28,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.example.android.pets.data.BlankContract.petContract;
 import com.example.android.pets.CatalogActivity;
@@ -37,7 +38,9 @@ import com.example.android.pets.CatalogActivity;
  */
 public class EditorActivity extends AppCompatActivity {
     CatalogActivity a1;
-
+    String Name,Breed,WeightTemp;
+    int Weight;
+    Context context;
 
     /** EditText field to enter the pet's name */
     public  EditText mNameEditText;
@@ -68,7 +71,7 @@ public class EditorActivity extends AppCompatActivity {
         mBreedEditText = (EditText) findViewById(R.id.edit_pet_breed);
         mWeightEditText = (EditText) findViewById(R.id.edit_pet_weight);
         mGenderSpinner = (Spinner) findViewById(R.id.spinner_gender);
-
+        context=getApplicationContext();
         setupSpinner();
     }
 
@@ -139,7 +142,15 @@ public class EditorActivity extends AppCompatActivity {
             // Respond to a click on the "Save" menu option
             case R.id.action_save:
                 CatalogActivity a1=new CatalogActivity();
-                a1.insertPet("Sanat","Sanat",1,10);
+                Name=mNameEditText.getText().toString().trim();
+                Breed=mBreedEditText.getText().toString().trim();
+                WeightTemp=mWeightEditText.getText().toString().trim();
+                if(WeightTemp.length()==0)
+                    Weight=0;
+                else
+                   Weight=Integer.parseInt(WeightTemp);
+                a1.insertPet(Name,Breed,mGender,10,context);
+                finish();
                 return true;
             // Respond to a click on the "Delete" menu option
             case R.id.action_delete:
