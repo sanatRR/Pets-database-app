@@ -11,6 +11,7 @@ public final class BlankContract
          public static final int GENDER_MALE=1;
          public static final int GENDER_FEMALE=2;
          public static final int GENDER_unknown=0;
+         public static final String _COUNT=BaseColumns._COUNT;
 
          //Name of the table
          public static final String Table_Name="pets";

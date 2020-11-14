@@ -75,6 +75,7 @@ public class EditorActivity extends AppCompatActivity {
         mWeightEditText = (EditText) findViewById(R.id.edit_pet_weight);
         mGenderSpinner = (Spinner) findViewById(R.id.spinner_gender);
         setupSpinner();
+        //Return the intent that started this activity
         i=getIntent();
         Name=i.getStringExtra("iname");
         Breed=i.getStringExtra("ibreed");
@@ -161,6 +162,7 @@ public class EditorActivity extends AppCompatActivity {
                 result.putExtra("iweight",Weight);
                 result.putExtra("igender",mGender);
                 setResult(RESULT_OK,result);
+                //finish() to close this activity
                 finish();
                 return true;
             // Respond to a click on the "Delete" menu option

@@ -65,6 +65,7 @@ public class CatalogActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(CatalogActivity.this, EditorActivity.class);
+                //request code is used to identify the intent while passing data back
                 startActivityForResult(intent,1);
             }
         });
@@ -155,13 +156,26 @@ public class CatalogActivity extends AppCompatActivity {
 
         Log.d("debug 1"," displayDataInfo() called");
 
-        // Perform this raw SQL query "SELECT * FROM pets"
-        // to get a Cursor that contains all rows from the pets table.
-        Cursor cursor = db.rawQuery("SELECT * FROM " + BlankContract.petContract.Table_Name, null);
+        //cursor object returned by the query method will be used to traverse the table
+        Cursor cursor = db.query(petContract.Table_Name,null,null,null,null,null,null);
+
+        //Get the column indices since they're needed while getting the data for each row.
+        int nameId,breedId,genderId,weightId;
+        nameId=cursor.getColumnIndex(petContract.COLUMN_NAME);
+        breedId=cursor.getColumnIndex(petContract.COLUMN_BREED);
+        genderId=cursor.getColumnIndex(petContract.COLUMN_GENDER);
+        weightId=cursor.getColumnIndex(petContract.COLUMN_WEIGHT);
         try {
             // Display the number of rows in the Cursor (which reflects the number of rows in the
             // pets table in the database).
         displayView.setText("Number of rows in pets database table: " + cursor.getCount());
+        displayView.append("\nName\tBreed\tGender\tWeight");
+        //moveToNext() method moves cursor to next row, if it is unable to do so then returns false, it starts at row -1.
+        while(cursor.moveToNext())
+        {
+            //Use the column indices obtained earlier to get data for each row
+            displayView.append("\n"+cursor.getString(nameId)+"\t"+cursor.getString(breedId)+"\t"+cursor.getInt(genderId)+"\t"+cursor.getInt(weightId));
+        }
         } finally {
             // Always close the cursor when you're done reading from it. This releases all its
             // resources and makes it invalid.
@@ -181,7 +195,6 @@ public class CatalogActivity extends AppCompatActivity {
                 gender=data.getIntExtra("igender",0);
                 weight=data.getIntExtra("iweight",0);
                 insertPet(name,breed,gender,weight);
-
             }
         }
     }
