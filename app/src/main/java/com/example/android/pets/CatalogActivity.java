@@ -21,6 +21,8 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.util.Log;
@@ -44,23 +46,29 @@ public class CatalogActivity extends AppCompatActivity {
 
     database mDbHelper;
     static SQLiteDatabase db;
-    static TextView displayView;
+    TextView displayView;
     Toast t1;
+    int testInt=0;
+
+    String name,breed;
+    int gender,weight;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d("onCreate","called");
         setContentView(R.layout.activity_catalog);
-        displayView = (TextView) findViewById(R.id.text_view_pet);
         // Setup FAB to open EditorActivity
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        displayView=(TextView)findViewById(R.id.text_view_pet);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(CatalogActivity.this, EditorActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent,1);
             }
         });
+        testInt=1;
         // To access our database, we instantiate our subclass of SQLiteOpenHelper i.e. database.java
         // and pass the context, which is the current activity.
         mDbHelper = new database(this);
@@ -71,7 +79,7 @@ public class CatalogActivity extends AppCompatActivity {
         db = mDbHelper.getWritableDatabase();
     }
 
-    public void insertPet(String name, String breed, int gender, int weight,Context context)
+    public void insertPet(String name, String breed, int gender, int weight)
     {
         Long row_id;
         ContentValues insertVal=new ContentValues();
@@ -79,16 +87,45 @@ public class CatalogActivity extends AppCompatActivity {
         insertVal.put(petContract.COLUMN_BREED,breed);
         insertVal.put(petContract.COLUMN_GENDER,gender);
         insertVal.put(petContract.COLUMN_WEIGHT,weight);
-        if(db==null)
-            Log.d("debug 1","db is null");
-        else
-        {
-            row_id=db.insert("pets",null,insertVal);
-            t1=Toast.makeText(context,String.valueOf(row_id),Toast.LENGTH_SHORT);
-            t1.show();
-        }
+        Log.d("debug 1","db is null");
+        row_id=db.insert("pets",null,insertVal);
+        t1=Toast.makeText(this,String.valueOf(row_id),Toast.LENGTH_SHORT);
+        t1.show();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.d("onStart","called");
         displayDatabaseInfo();
     }
+
+    @Override
+    protected void onStop() {
+        Log.d("onStop","called");
+        super.onStop();
+    }
+
+    @Override
+    protected void onPause() {
+        Log.d("onPause","called");
+        super.onPause();
+    }
+
+    @Override
+    protected void onRestart() {
+        Log.d("onRestart","called");
+        super.onRestart();
+       // displayView = (TextView) findViewById(R.id.text_view_pet);
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.d("onDestroy","called");
+        super.onDestroy();
+    }
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -129,6 +166,23 @@ public class CatalogActivity extends AppCompatActivity {
             // Always close the cursor when you're done reading from it. This releases all its
             // resources and makes it invalid.
             cursor.close();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode==1)
+        {
+            if(resultCode==RESULT_OK)
+            {
+                name=data.getStringExtra("iname");
+                breed=data.getStringExtra("ibreed");
+                gender=data.getIntExtra("igender",0);
+                weight=data.getIntExtra("iweight",0);
+                insertPet(name,breed,gender,weight);
+
+            }
         }
     }
 }

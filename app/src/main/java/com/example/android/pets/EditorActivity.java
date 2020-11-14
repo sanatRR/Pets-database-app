@@ -15,7 +15,9 @@
  */
 package com.example.android.pets;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import androidx.core.app.NavUtils;
 import androidx.appcompat.app.AppCompatActivity;
@@ -28,6 +30,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.android.pets.data.BlankContract.petContract;
@@ -39,8 +42,8 @@ import com.example.android.pets.CatalogActivity;
 public class EditorActivity extends AppCompatActivity {
     CatalogActivity a1;
     String Name,Breed,WeightTemp;
-    int Weight;
-    Context context;
+    int Weight,gender;
+    Intent i;
 
     /** EditText field to enter the pet's name */
     public  EditText mNameEditText;
@@ -71,8 +74,12 @@ public class EditorActivity extends AppCompatActivity {
         mBreedEditText = (EditText) findViewById(R.id.edit_pet_breed);
         mWeightEditText = (EditText) findViewById(R.id.edit_pet_weight);
         mGenderSpinner = (Spinner) findViewById(R.id.spinner_gender);
-        context=getApplicationContext();
         setupSpinner();
+        i=getIntent();
+        Name=i.getStringExtra("iname");
+        Breed=i.getStringExtra("ibreed");
+        Weight=i.getIntExtra("iweight",0);
+        gender=i.getIntExtra("igender",0) ;
     }
 
     /**
@@ -141,7 +148,6 @@ public class EditorActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             // Respond to a click on the "Save" menu option
             case R.id.action_save:
-                CatalogActivity a1=new CatalogActivity();
                 Name=mNameEditText.getText().toString().trim();
                 Breed=mBreedEditText.getText().toString().trim();
                 WeightTemp=mWeightEditText.getText().toString().trim();
@@ -149,7 +155,12 @@ public class EditorActivity extends AppCompatActivity {
                     Weight=0;
                 else
                    Weight=Integer.parseInt(WeightTemp);
-                a1.insertPet(Name,Breed,mGender,10,context);
+                Intent result=new Intent();
+                result.putExtra("iname",Name);
+                result.putExtra("ibreed",Breed);
+                result.putExtra("iweight",Weight);
+                result.putExtra("igender",mGender);
+                setResult(RESULT_OK,result);
                 finish();
                 return true;
             // Respond to a click on the "Delete" menu option
