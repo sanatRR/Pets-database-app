@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 import com.example.android.pets.data.BlankContract.petContract;
 
-public class database extends SQLiteOpenHelper {
+public class databaseHelper extends SQLiteOpenHelper {
 
     private static String name="pet";
     private static int databaseVersion=1;
@@ -15,7 +15,7 @@ public class database extends SQLiteOpenHelper {
      * Called when object of database is made
      * @param context Context of activity from which the method was called
      */
-    public database(Context context)
+    public databaseHelper(Context context)
     {
         /**
          * @params name database name

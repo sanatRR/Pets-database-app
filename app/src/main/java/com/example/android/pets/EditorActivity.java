@@ -15,14 +15,11 @@
  */
 package com.example.android.pets;
 
-import android.app.Activity;
-import android.content.Context;
+
 import android.content.Intent;
 import android.os.Bundle;
 import androidx.core.app.NavUtils;
 import androidx.appcompat.app.AppCompatActivity;
-import android.text.TextUtils;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,11 +27,9 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.TextView;
-import android.widget.Toast;
+
 
 import com.example.android.pets.data.BlankContract.petContract;
-import com.example.android.pets.CatalogActivity;
 
 /**
  * Allows user to create a new pet or edit an existing one.

@@ -16,7 +16,6 @@
 package com.example.android.pets;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -29,13 +28,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.android.pets.data.BlankContract;
-import com.example.android.pets.data.database;
+import com.example.android.pets.data.databaseHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.example.android.pets.data.BlankContract.petContract;
 
@@ -44,7 +40,7 @@ import com.example.android.pets.data.BlankContract.petContract;
  */
 public class CatalogActivity extends AppCompatActivity {
 
-    database mDbHelper;
+    databaseHelper mDbHelper;
     static SQLiteDatabase db;
     TextView displayView;
     Toast t1;
@@ -72,13 +68,14 @@ public class CatalogActivity extends AppCompatActivity {
         testInt=1;
         // To access our database, we instantiate our subclass of SQLiteOpenHelper i.e. database.java
         // and pass the context, which is the current activity.
-        mDbHelper = new database(this);
+        mDbHelper = new databaseHelper(this);
         // Create and/or open a database to read from it
         //.getReadableDatabase() is similar to .open
         //First checks if database already exists, if not then calls the onCreate() of database.java
         // finally returns a SQLiteDatabase object
         db = mDbHelper.getWritableDatabase();
     }
+
 
     public void insertPet(String name, String breed, int gender, int weight)
     {
@@ -154,10 +151,10 @@ public class CatalogActivity extends AppCompatActivity {
 
     private void displayDatabaseInfo() {
 
-        Log.d("debug 1"," displayDataInfo() called");
-
         //cursor object returned by the query method will be used to traverse the table
-        Cursor cursor = db.query(petContract.Table_Name,null,null,null,null,null,null);
+     //  Cursor cursor = db.query(petContract.Table_Name,null,null,null,null,null,null);
+        String projections[]={petContract._ID,petContract.COLUMN_NAME,petContract.COLUMN_GENDER,petContract.COLUMN_BREED,petContract.COLUMN_WEIGHT};
+       Cursor cursor=getContentResolver().query(petContract.CONTENT_URI,projections,null,null,null);
 
         //Get the column indices since they're needed while getting the data for each row.
         int nameId,breedId,genderId,weightId;

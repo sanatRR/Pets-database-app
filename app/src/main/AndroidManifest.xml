@@ -37,6 +37,12 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".CatalogActivity" />
         </activity>
+        <!--The provider associates the authority(part of Uri) with name of java class given -->
+        <provider
+            android:authorities="com.example.android.pets"
+            android:exported="false"
+            android:name=".data.PetProvider" />
+
     </application>
 
 </manifest>
