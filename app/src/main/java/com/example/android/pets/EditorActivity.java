@@ -16,10 +16,13 @@
 package com.example.android.pets;
 
 
+import android.content.ContentUris;
 import android.content.Intent;
 import android.os.Bundle;
 import androidx.core.app.NavUtils;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -35,7 +38,6 @@ import com.example.android.pets.data.BlankContract.petContract;
  * Allows user to create a new pet or edit an existing one.
  */
 public class EditorActivity extends AppCompatActivity {
-    CatalogActivity a1;
     String Name,Breed,WeightTemp;
     int Weight,gender;
     Intent i;
@@ -56,7 +58,8 @@ public class EditorActivity extends AppCompatActivity {
      * Gender of the pet. The possible values are:
      * 0 for unknown gender, 1 for male, 2 for female.
      */
-    public static int mGender = 0,tempWeight;
+    public static int mGender = 0;
+    boolean mEditMode;
 
 
     @Override
@@ -75,7 +78,17 @@ public class EditorActivity extends AppCompatActivity {
         Name=i.getStringExtra("iname");
         Breed=i.getStringExtra("ibreed");
         Weight=i.getIntExtra("iweight",0);
-        gender=i.getIntExtra("igender",0) ;
+        gender=i.getIntExtra("igender",0);
+        mEditMode=i.getData()!=null;
+        if(mEditMode)
+        {
+            this.setTitle("Edit pet");
+            mNameEditText.setText(i.getStringExtra("eName"));
+            mBreedEditText.setText(i.getStringExtra("eBreed"));
+            mWeightEditText.setText(String.valueOf(i.getIntExtra("eWeight",0)));
+            mGenderSpinner.setSelection(i.getIntExtra("eGender",0));
+            Log.d("Editor Activity", String.valueOf(ContentUris.parseId(i.getData())));
+        }
     }
 
     /**
@@ -156,6 +169,8 @@ public class EditorActivity extends AppCompatActivity {
                 result.putExtra("ibreed",Breed);
                 result.putExtra("iweight",Weight);
                 result.putExtra("igender",mGender);
+                result.setData(i.getData());
+                Log.d("debug -2", String.valueOf(i.getData()));
                 setResult(RESULT_OK,result);
                 //finish() to close this activity
                 finish();

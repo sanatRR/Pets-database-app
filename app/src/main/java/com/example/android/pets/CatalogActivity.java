@@ -22,14 +22,20 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.CursorLoader;
+import androidx.loader.content.Loader;
 
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.example.android.pets.data.PetCursorAdapter;
@@ -40,7 +46,7 @@ import com.example.android.pets.data.BlankContract.petContract;
 /**
  * Displays list of pets that were entered and stored in the app.
  */
-public class CatalogActivity extends AppCompatActivity {
+public class CatalogActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
     databaseHelper mDbHelper;
     static SQLiteDatabase db;
@@ -50,6 +56,11 @@ public class CatalogActivity extends AppCompatActivity {
     String name,breed;
     int gender,weight;
     ListView l1;
+    RelativeLayout r1;
+    PetCursorAdapter p1;
+    Intent edit;
+    private Cursor mCursor;
+    private Uri mUri;
 
 
     @Override
@@ -60,6 +71,7 @@ public class CatalogActivity extends AppCompatActivity {
         // Setup FAB to open EditorActivity
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         l1=(ListView)findViewById(R.id.list);
+        r1=findViewById(R.id.empty_view);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -77,59 +89,57 @@ public class CatalogActivity extends AppCompatActivity {
         //First checks if database already exists, if not then calls the onCreate() of database.java
         // finally returns a SQLiteDatabase object
         db = mDbHelper.getWritableDatabase();
-
+        p1=new PetCursorAdapter(this,null);
+        l1.setAdapter(p1);
+        getSupportLoaderManager().initLoader(1,null,this);
+        l1.setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id)
+            {
+                mCursor.moveToFirst();
+                Uri uri=Uri.withAppendedPath(petContract.CONTENT_URI, String.valueOf(id));
+                Log.d("Uri is", String.valueOf(uri));
+                mCursor.move(position);
+                Log.d("mCursor", String.valueOf(mCursor.getPosition()));
+                edit=new Intent(CatalogActivity.this, EditorActivity.class);
+                edit.setData(uri); mUri=uri;
+                edit.putExtra("eName",mCursor.getString(mCursor.getColumnIndex(petContract.COLUMN_NAME)));
+                edit.putExtra("eBreed",mCursor.getString(mCursor.getColumnIndex(petContract.COLUMN_BREED)));
+                edit.putExtra("eGender",mCursor.getInt(mCursor.getColumnIndex(petContract.COLUMN_GENDER)));
+                edit.putExtra("eWeight",mCursor.getInt(mCursor.getColumnIndex(petContract.COLUMN_WEIGHT)));
+                startActivityForResult(edit,2);
+            }
+        });
     }
 
-
-    public void insertPet(String name, String breed, int gender, int weight)
+    public void savePet(String name, String breed, int gender, int weight)
     {
-        Long row_id;
         ContentValues insertVal=new ContentValues();
         insertVal.put(petContract.COLUMN_NAME,name);
         insertVal.put(petContract.COLUMN_BREED,breed);
         insertVal.put(petContract.COLUMN_GENDER,gender);
         insertVal.put(petContract.COLUMN_WEIGHT,weight);
-        Log.d("debug 1","db is null");
-        try {
-            Uri uri=getContentResolver().insert(petContract.CONTENT_URI,insertVal);
-            Log.d("insertPet", String.valueOf(uri));
-            t1=Toast.makeText(this,"Pet Inserted",Toast.LENGTH_SHORT);
-            t1.show();
-        }catch(IllegalArgumentException e)
+        Log.d("debug 0", String.valueOf(mUri));
+        if(mUri==null)
         {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        Log.d("onStart","called");
-        displayDatabaseInfo();
-    }
-
-    @Override
-    protected void onStop() {
-        Log.d("onStop","called");
-        super.onStop();
-    }
-
-    @Override
-    protected void onPause() {
-        Log.d("onPause","called");
-        super.onPause();
-    }
-
-    @Override
-    protected void onRestart() {
-        Log.d("onRestart","called");
-        super.onRestart();
-    }
-
-    @Override
-    protected void onDestroy() {
-        Log.d("onDestroy","called");
-        super.onDestroy();
+           Log.d("debug 1", String.valueOf(mUri));
+           try {
+               Uri uri=getContentResolver().insert(petContract.CONTENT_URI,insertVal);
+               Log.d("insertPet", String.valueOf(uri));
+               t1=Toast.makeText(this,"Pet Inserted",Toast.LENGTH_SHORT);
+               t1.show();
+           }catch(IllegalArgumentException e)
+           {
+               e.printStackTrace();
+           }
+       }
+       else
+       {
+           Log.d("uriupdate","insert");
+           getContentResolver().update(mUri,insertVal,null,null);
+           mUri=null;
+       }
     }
 
 
@@ -158,45 +168,11 @@ public class CatalogActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void displayDatabaseInfo() {
-
-        //cursor object returned by the query method will be used to traverse the table
-   /*     String projections[]={petContract._ID,petContract.COLUMN_NAME,petContract.COLUMN_GENDER,petContract.COLUMN_BREED,petContract.COLUMN_WEIGHT};
-       Cursor cursor=getContentResolver().query(petContract.CONTENT_URI,projections,null,null,null);
-
-        //Get the column indices since they're needed while getting the data for each row.
-        int nameId,breedId,genderId,weightId;
-        nameId=cursor.getColumnIndex(petContract.COLUMN_NAME);
-        breedId=cursor.getColumnIndex(petContract.COLUMN_BREED);
-        genderId=cursor.getColumnIndex(petContract.COLUMN_GENDER);
-        weightId=cursor.getColumnIndex(petContract.COLUMN_WEIGHT);
-        try {
-            // Display the number of rows in the Cursor (which reflects the number of rows in the
-            // pets table in the database).
-        displayView.setText("Number of rows in pets database table: " + cursor.getCount());
-        displayView.append("\nName\tBreed\tGender\tWeight");
-        //moveToNext() method moves cursor to next row, if it is unable to do so then returns false, it starts at row -1.
-        while(cursor.moveToNext())
-        {
-            //Use the column indices obtained earlier to get data for each row
-            displayView.append("\n"+cursor.getString(nameId)+"\t"+cursor.getString(breedId)+"\t"+cursor.getInt(genderId)+"\t"+cursor.getInt(weightId));
-        }
-        } finally {
-            // Always close the cursor when you're done reading from it. This releases all its
-            // resources and makes it invalid.
-            cursor.close();
-        } */
-        String projections[]={petContract._ID,petContract.COLUMN_NAME,petContract.COLUMN_GENDER,petContract.COLUMN_BREED,petContract.COLUMN_WEIGHT};
-        Cursor cursor=getContentResolver().query(petContract.CONTENT_URI,projections,null,null,null);
-        PetCursorAdapter p1=new PetCursorAdapter(this,cursor);
-        ListView l1=(ListView)findViewById(R.id.list);
-        l1.setAdapter(p1);
-    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode==1)
+        if(requestCode==1||requestCode==2)
         {
             if(resultCode==RESULT_OK)
             {
@@ -204,8 +180,34 @@ public class CatalogActivity extends AppCompatActivity {
                 breed=data.getStringExtra("ibreed");
                 gender=data.getIntExtra("igender",0);
                 weight=data.getIntExtra("iweight",0);
-                insertPet(name,breed,gender,weight);
+                mUri=data.getData();
+                Log.d("debug -1", String.valueOf(mUri));
+                savePet(name,breed,gender,weight);
             }
         }
+    }
+
+    @NonNull
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, @Nullable Bundle args) {
+        return new CursorLoader(this,petContract.CONTENT_URI,null,null,null,null);
+    }
+
+    @Override
+    public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
+        //Update p1 PetCursorApadter with updated pet data
+        Log.d("cursor data", String.valueOf(data.getPosition()));
+        mCursor=data;
+        p1.swapCursor(data);
+        if(data.getCount()==0)
+            r1.setVisibility(View.VISIBLE);
+        else
+            r1.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void onLoaderReset(@NonNull Loader<Cursor> loader) {
+        //Callback called when data needs to be deleted
+        p1.swapCursor(null);
     }
 }
