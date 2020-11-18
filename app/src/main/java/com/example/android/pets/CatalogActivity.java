@@ -19,6 +19,7 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
@@ -28,9 +29,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
+import android.widget.ListView;
 import android.widget.Toast;
 
+import com.example.android.pets.data.PetCursorAdapter;
 import com.example.android.pets.data.databaseHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.example.android.pets.data.BlankContract.petContract;
@@ -42,21 +44,22 @@ public class CatalogActivity extends AppCompatActivity {
 
     databaseHelper mDbHelper;
     static SQLiteDatabase db;
-    TextView displayView;
     Toast t1;
     int testInt=0;
 
     String name,breed;
     int gender,weight;
+    ListView l1;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d("onCreate","called");
-        setContentView(R.layout.activity_catalog);
+        setContentView(R.layout.list);
         // Setup FAB to open EditorActivity
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        displayView=(TextView)findViewById(R.id.text_view_pet);
+        l1=(ListView)findViewById(R.id.list);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -74,6 +77,7 @@ public class CatalogActivity extends AppCompatActivity {
         //First checks if database already exists, if not then calls the onCreate() of database.java
         // finally returns a SQLiteDatabase object
         db = mDbHelper.getWritableDatabase();
+
     }
 
 
@@ -86,9 +90,15 @@ public class CatalogActivity extends AppCompatActivity {
         insertVal.put(petContract.COLUMN_GENDER,gender);
         insertVal.put(petContract.COLUMN_WEIGHT,weight);
         Log.d("debug 1","db is null");
-        row_id=db.insert("pets",null,insertVal);
-        t1=Toast.makeText(this,String.valueOf(row_id),Toast.LENGTH_SHORT);
-        t1.show();
+        try {
+            Uri uri=getContentResolver().insert(petContract.CONTENT_URI,insertVal);
+            Log.d("insertPet", String.valueOf(uri));
+            t1=Toast.makeText(this,"Pet Inserted",Toast.LENGTH_SHORT);
+            t1.show();
+        }catch(IllegalArgumentException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -114,7 +124,6 @@ public class CatalogActivity extends AppCompatActivity {
     protected void onRestart() {
         Log.d("onRestart","called");
         super.onRestart();
-       // displayView = (TextView) findViewById(R.id.text_view_pet);
     }
 
     @Override
@@ -152,8 +161,7 @@ public class CatalogActivity extends AppCompatActivity {
     private void displayDatabaseInfo() {
 
         //cursor object returned by the query method will be used to traverse the table
-     //  Cursor cursor = db.query(petContract.Table_Name,null,null,null,null,null,null);
-        String projections[]={petContract._ID,petContract.COLUMN_NAME,petContract.COLUMN_GENDER,petContract.COLUMN_BREED,petContract.COLUMN_WEIGHT};
+   /*     String projections[]={petContract._ID,petContract.COLUMN_NAME,petContract.COLUMN_GENDER,petContract.COLUMN_BREED,petContract.COLUMN_WEIGHT};
        Cursor cursor=getContentResolver().query(petContract.CONTENT_URI,projections,null,null,null);
 
         //Get the column indices since they're needed while getting the data for each row.
@@ -177,7 +185,12 @@ public class CatalogActivity extends AppCompatActivity {
             // Always close the cursor when you're done reading from it. This releases all its
             // resources and makes it invalid.
             cursor.close();
-        }
+        } */
+        String projections[]={petContract._ID,petContract.COLUMN_NAME,petContract.COLUMN_GENDER,petContract.COLUMN_BREED,petContract.COLUMN_WEIGHT};
+        Cursor cursor=getContentResolver().query(petContract.CONTENT_URI,projections,null,null,null);
+        PetCursorAdapter p1=new PetCursorAdapter(this,cursor);
+        ListView l1=(ListView)findViewById(R.id.list);
+        l1.setAdapter(p1);
     }
 
     @Override

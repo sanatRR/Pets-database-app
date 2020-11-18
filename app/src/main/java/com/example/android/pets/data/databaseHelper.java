@@ -35,7 +35,7 @@ public class databaseHelper extends SQLiteOpenHelper {
     {
         String COMMA_SEP=",";
         //Command to create table
-        String CREATE_PET_TABLE="CREATE TABLE "+petContract.Table_Name+" ("+petContract._ID +" INTEGER PRIMARY KEY AUTOINCREMENT"+COMMA_SEP+petContract.COLUMN_NAME+" TEXT "+COMMA_SEP+petContract.COLUMN_BREED+" TEXT "+COMMA_SEP+petContract.COLUMN_GENDER+" INTEGER DEFAULT 0"+COMMA_SEP+petContract.COLUMN_WEIGHT+" INTEGER"+");";
+        String CREATE_PET_TABLE="CREATE TABLE "+petContract.Table_Name+" ("+petContract._ID +" INTEGER PRIMARY KEY AUTOINCREMENT"+COMMA_SEP+petContract.COLUMN_NAME+" TEXT "+COMMA_SEP+petContract.COLUMN_BREED+" TEXT "+COMMA_SEP+petContract.COLUMN_GENDER+" INTEGER DEFAULT 0"+COMMA_SEP+petContract.COLUMN_WEIGHT+" INTEGER DEFAULT 0"+");";
         Log.i("debug 2: ",CREATE_PET_TABLE);
         //Execute the sql query, execSQL cannot be used for select statements
         sqLiteDatabase.execSQL(CREATE_PET_TABLE);
