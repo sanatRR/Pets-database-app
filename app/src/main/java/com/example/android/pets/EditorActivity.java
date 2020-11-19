@@ -16,8 +16,12 @@
 package com.example.android.pets;
 
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.ContentUris;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import androidx.core.app.NavUtils;
 import androidx.appcompat.app.AppCompatActivity;
@@ -25,11 +29,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.Toast;
+
+import com.example.android.pets.data.databaseHelper;
 
 
 import com.example.android.pets.data.BlankContract.petContract;
@@ -59,7 +67,7 @@ public class EditorActivity extends AppCompatActivity {
      * 0 for unknown gender, 1 for male, 2 for female.
      */
     public static int mGender = 0;
-    boolean mEditMode;
+    boolean mEditMode,mPetHasChanged=false;
 
 
     @Override
@@ -72,6 +80,10 @@ public class EditorActivity extends AppCompatActivity {
         mBreedEditText = (EditText) findViewById(R.id.edit_pet_breed);
         mWeightEditText = (EditText) findViewById(R.id.edit_pet_weight);
         mGenderSpinner = (Spinner) findViewById(R.id.spinner_gender);
+        mNameEditText.setOnTouchListener(mTOuchListener);
+        mBreedEditText.setOnTouchListener(mTOuchListener);
+        mWeightEditText.setOnTouchListener(mTOuchListener);
+        mGenderSpinner.setOnTouchListener(mTOuchListener);
         setupSpinner();
         //Return the intent that started this activity
         i=getIntent();
@@ -90,6 +102,98 @@ public class EditorActivity extends AppCompatActivity {
             Log.d("Editor Activity", String.valueOf(ContentUris.parseId(i.getData())));
         }
     }
+
+    private View.OnTouchListener mTOuchListener=new View.OnTouchListener()
+    {
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            mPetHasChanged=true;
+            //return false??
+            return false;
+        }
+    };
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu)
+    {
+        super.onPrepareOptionsMenu(menu);
+        if(!mEditMode)
+        {
+            MenuItem menuitem=menu.findItem(R.id.action_delete);
+            menuitem.setVisible(false);
+        }
+        return true;
+    }
+
+    private void showUnsavedChangesDialog(DialogInterface.OnClickListener discardButtonClickListener)
+    {
+        //Create a display dialog asking for choice
+        AlertDialog.Builder builder=new AlertDialog.Builder(this);
+        builder.setMessage("Discard your changes and quit editing?");
+        //positive button=yes, Negative button=no
+        builder.setPositiveButton("DISCARD",discardButtonClickListener);
+        builder.setNegativeButton("KEEP EDITING", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                if(dialogInterface!=null)
+                    dialogInterface.dismiss();
+            }
+        });
+        AlertDialog alertDialog=builder.create();
+        alertDialog.show();
+    }
+
+    @Override
+    public void onBackPressed()
+    {
+        if(!mPetHasChanged)
+        {
+            super.onBackPressed();
+            return;
+        }
+        DialogInterface.OnClickListener discardButtonListener=new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                finish();
+            }
+        };
+        showUnsavedChangesDialog(discardButtonListener);
+    }
+
+    private void showDeleteConfirmationDialog()
+    {
+        AlertDialog.Builder builder=new AlertDialog.Builder(this);
+        builder.setMessage("Delete this pet?");
+        builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                deletePet();
+                Toast t1=Toast.makeText(getApplicationContext(),"pet deleted",Toast.LENGTH_SHORT);
+                t1.show();
+                finish();
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                if(dialogInterface!=null)
+                {
+                    dialogInterface.dismiss();
+                }
+            }
+        });
+        AlertDialog alertDialog=builder.create();
+        alertDialog.show();
+    }
+
+    private void deletePet()
+    {
+        databaseHelper delHelper=new databaseHelper(this);
+        SQLiteDatabase delBase=delHelper.getWritableDatabase();
+        getContentResolver().delete(i.getData(),null,null);
+    }
+
+
 
     /**
      * Setup the dropdown spinner that allows the user to select the gender of the pet.
@@ -164,6 +268,8 @@ public class EditorActivity extends AppCompatActivity {
                     Weight=0;
                 else
                    Weight=Integer.parseInt(WeightTemp);
+                if(Breed.length()==0)
+                    Breed="Unknown breed";
                 Intent result=new Intent();
                 result.putExtra("iname",Name);
                 result.putExtra("ibreed",Breed);
@@ -177,12 +283,23 @@ public class EditorActivity extends AppCompatActivity {
                 return true;
             // Respond to a click on the "Delete" menu option
             case R.id.action_delete:
-                // Do nothing for now
+                showDeleteConfirmationDialog();
                 return true;
             // Respond to a click on the "Up" arrow button in the app bar
             case android.R.id.home:
                 // Navigate back to parent activity (CatalogActivity)
-                NavUtils.navigateUpFromSameTask(this);
+                if(!mPetHasChanged)
+                {
+                    NavUtils.navigateUpFromSameTask(EditorActivity.this);
+                    return  true;
+                }
+                DialogInterface.OnClickListener discardButtonClickListener=new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        NavUtils.navigateUpFromSameTask(EditorActivity.this);
+                    }
+                };
+                showUnsavedChangesDialog(discardButtonClickListener);
                 return true;
         }
         return super.onOptionsItemSelected(item);

@@ -136,11 +136,22 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
        }
        else
        {
-           Log.d("uriupdate","insert");
-           getContentResolver().update(mUri,insertVal,null,null);
-           mUri=null;
-       }
-    }
+          try {
+                  Log.d("uriupdate","insert");
+                  getContentResolver().update(mUri,insertVal,null,null);
+                  mUri=null;
+                  t1=Toast.makeText(this,"pet updated",Toast.LENGTH_SHORT);
+                  t1.show();
+              }
+              catch(IllegalArgumentException e)
+              {
+                  e.printStackTrace();
+                  t1=Toast.makeText(this,"changes not saved",Toast.LENGTH_SHORT);
+                  t1.show();
+              }
+          }
+        }
+
 
 
 
@@ -155,15 +166,12 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // User clicked on a menu option in the app bar overflow menu
-        switch (item.getItemId()) {
-            // Respond to a click on the "Insert dummy data" menu option
-            case R.id.action_insert_dummy_data:
-               // insertPet();
-                return true;
-            // Respond to a click on the "Delete all entries" menu option
-            case R.id.action_delete_all_entries:
-                // Do nothing for now
-                return true;
+        // Respond to a click on the "Delete all entries" menu option
+        if (item.getItemId() == R.id.action_delete_all_entries) {
+            getContentResolver().delete(petContract.CONTENT_URI, null, null);
+            t1 = Toast.makeText(this, "All pets deleted", Toast.LENGTH_LONG);
+            t1.show();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
