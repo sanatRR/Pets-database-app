@@ -3,7 +3,7 @@ Pets Database App
 
 This app displays a list of pets and their related data that the user inputs.<br>
 The data is stored in a SQLite3 database.<br>
-Operations like insert,update and delete are supported.<br>
+Operations like insert, update and delete are supported.<br>
 
 
 
